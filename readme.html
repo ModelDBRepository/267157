@@ -1,0 +1,31 @@
+<html>
+
+<head>
+<style>
+h1 {
+   font-size: 1.2em;
+}
+h2 {
+   font-size: 1em;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Usage</h1>
+We give here <a href="http://www.math.pitt.edu/~bard/xpp/xpp.html" target="_blank">XPP</a> files corresponding to the simulations shown in Figure 5 of <a href="https://www.jci.org/articles/view/142203" target="_blank">https://www.jci.org/articles/view/142203</a>. Initial condition and parameter value files for the different conditions are given in the folders "ic" and "par". From the folder containing "2_neurons.ode", type the commands below in a terminal and then click on "Initialconds", "Go". 
+
+<h2>Control condition</h2>
+xppaut 2_neurons.ode -parfile par/1.0.par -icfile ic/1.0.ic<br/><br/>
+<img src="screenshots/v_e_trace_control.png" alt="screenshot" width="500"><br/><br/>
+
+<h2>FHM-3 mutations of NaV1.1</h2>
+xppaut 2_neurons.ode -parfile par/6.0.par -icfile ic/6.0.ic<br/><br/>
+<img src="screenshots/v_e_trace_csd.png" alt="screenshot" width="500"><br/><br/>
+
+
+</body>
+
+</html>
+

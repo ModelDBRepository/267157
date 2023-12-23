@@ -1,0 +1,48 @@
+44 Number params
+0 g_D_e
+0.1 g_D_i
+185 Na_sum
+142 Cl_sum
+4 beta_1
+0.666666666666667 beta_2
+30 rho_pump
+7.7 K_pump_Na
+2 K_pump_K
+0.39 a
+1.28 b
+0.00004 epsilon
+3.5 K_bath
+-3258497 H_1
+4.45e-5 gamma_e
+3 tau_e
+0 vethres
+100 g_Na_FI_e
+1 g_Na_P_e
+80 g_K_DR_e
+1 g_K_AHP_e
+0.001 K_Ca
+0.015 g_Na_L_e
+0.05 g_K_L_e
+0.015 g_Cl_L_e
+0.0003 rho_KCC
+0.0001 rho_NKCC
+16 K_NKCC_K
+0.1 g_GLU_e
+0.1 g_GABA_e
+1 g_Ca_e
+120 E_Ca_e
+80 tau_Ca
+-2947024 H_2
+0.0000509 gamma_i
+9 tau_i
+0 vithres
+105.75 g_Na_FI_i
+6.75 g_Na_P_i
+10 shift_P
+225 g_K_DR_i
+0.012 g_Na_L_i
+0.05 g_K_L_i
+0.1 g_GLU_i
+
+
+

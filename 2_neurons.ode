@@ -1,0 +1,320 @@
+################################################################################
+# CONDUCTANCE-BASED MODEL OF A PAIR OF NEURONS: 
+# A GABAERGIC NEURON AND A PYRAMIDAL NEURON
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# INITIAL CONDITIONS
+#-------------------------------------------------------------------------------
+
+# initial conditions given in .ic file
+
+
+#-------------------------------------------------------------------------------
+# MODEL PARAMETERS
+#-------------------------------------------------------------------------------
+
+# parameter values given in .par file
+
+
+# EXTERNAL GLUTAERGIC CONDUCTANCES FOR EACH NEURON
+par g_D_e
+par g_D_i
+
+# CONSERVATION OF MASS
+par Na_sum
+par Cl_sum
+
+# RATIO OF TOTAL INTRACELLULAR VOLUME OVER EXTRACELLULAR VOLUME
+par beta_1
+
+# RATIO OF GABAERGIC NEURON VOLUME OVER PYRAMIDAL NEURON VOLUME
+par beta_2
+
+# PUMP MAXIMAL RATE AT -70 mV
+par rho_pump
+# PUMP HALF ACTIVATION INTRACELLULAR SODIUM
+par K_pump_Na
+# PUMP HALF ACTIVATION INTRACELLULAR POTASSIUM
+par K_pump_K
+# PARAMETERS FOR VOLTAGE DEPENDENCE OF THE PUMP
+par a
+par b
+# EXTRACELLULAR POTASSIUM DIFFUSION RATE
+par epsilon
+# POTASSIUM BATH CONCENTRATION
+par K_bath
+
+
+#### PYRAMIDAL NEURON
+
+# FIRST INTEGRAL
+par H_1
+# CONVERSION FACTOR FROM CURRENT DENSITY TO CONCENTRATION PER TIME
+par gamma_e
+
+# EXCITATORY SYNAPSE
+global 1 v_e-vethres {s_e=1}
+# TIME CONSTANT FOR DECAY
+par tau_e
+# VOLTAGE THRESHOLD
+par vethres
+
+# FAST INACTIVATING SODIUM MAXIMAL CONDUCTANCE
+par g_Na_FI_e
+# PERSISTENT SODIUM MAXIMAL CONDUCTANCE
+par g_Na_P_e
+# DELAYED RECTIFIER POTASSIUM MAXIMAL CONDUCTANCE
+par g_K_DR_e
+
+# CALCIUM ACTIVATED POTASSIUM MAXIMAL CONDUCTANCE
+par g_K_AHP_e
+# CALCIUM ACTIVATED POTASSIUM CURRENT HALF ACTIVATION CALCIUM CONCENTRATION
+par K_Ca
+
+# SODIUM LEAK CONDUCTANCE
+par g_Na_L_e
+# POTASSIUM CONDUCTANCE
+par g_K_L_e
+# CHLORIDE LEAK CONDUCTANCE
+par g_Cl_L_e
+
+# KCC2 COTRANSPORTER STRENGTH
+par rho_KCC
+# NKCC1 COTRANSPORTER STRENGTH
+par rho_NKCC
+# NKCC1 HALF ACTIVATION POTASSIUM CONCENTRATION
+par K_NKCC_K
+
+# GLUAMATERGIC SYNAPSE MAXIMAL CONDUCTANCE
+par g_GLU_e
+# GABAERGIC SYNAPSE MAXIMAL CONDUCTANCE
+par g_GABA_e
+
+# CALCIUM MAXIMAL CONDUCTANCE
+par g_Ca_e
+# CALCIUM REVERSAL POTENTIAL
+par E_Ca_e
+# TIME CONSTANT FOR CALCIUM EXTRUSION AND BUFFERING 
+par tau_Ca
+
+
+#### GABAERGIC NEURON
+
+# FIRST INTEGRAL
+par H_2
+# CONVERSION FACTOR FROM CURRENT DENSITY TO CONCENTRATION PER TIME
+par gamma_i
+
+# INHIBITORY SYNAPSE
+global 1 v_i-vithres {s_i=1}
+# TIME CONSTANT FOR DECAY
+par tau_i
+# VOLTAGE THRESHOLD
+par vithres
+
+# FAST INACTIVATING SODIUM MAXIMAL CONDUCTANCE
+par g_Na_FI_i
+# PERSISTENT SODIUM MAXIMAL CONDUCTANCE
+par g_Na_P_i
+# SHIFT OF VOLTAGE DEPENDENCE OF ACTIVATION FOR PERSITENT SODIUM CURRENT
+par shift_P
+# DELAYED RECTIFIER POTASSIUM MAXIMAL CONDUCTANCE
+par g_K_DR_i
+
+# SODIUM LEAK CONDUCTANCE
+par g_Na_L_i
+# POTASSIUM LEAK CONDUCTANCE
+par g_K_L_i
+
+# GLUTAMATERGIC SYNAPSE MAXIMAL CONDUCTANCE
+par g_GLU_i
+
+
+#-------------------------------------------------------------------------------
+# CONSERVATIONS, REVERSAL POTENTIALS, (IN)ACTIVATIONS FUNCTIONS AND CURRENTS
+#-------------------------------------------------------------------------------
+
+#### CONSERVATIONS
+
+Na_o = Na_sum - beta_1*(1/(1+beta_2)*Na_e + beta_2/(1+beta_2)*Na_i )
+Cl_o = Cl_sum - beta_1/(1+beta_2)*Cl_e
+aux Na_o_ = Na_o
+aux Cl_o_ = Cl_o
+
+K_e = gamma_e*(v_e - H_1) - Na_e + Cl_e
+K_i = gamma_i*(v_i - H_2) - Na_i
+aux K_e_ = K_e
+aux K_i_ = K_i
+
+
+#### PYRAMIDAL NEURON
+
+# REVERSAL POTENTIALS
+E_K_e = 26.64*log(K_o/K_e)
+E_Na_e = 26.64*log(Na_o/Na_e)
+E_Cl_e = 26.64*log(Cl_e/Cl_o)
+aux E_K_e_ = E_K_e
+aux E_Na_e_ = E_Na_e
+aux E_Cl_e_ = E_Cl_e
+
+# (IN)ACTIVATION FUNCTIONS
+am_e = 0.32*(v_e + 54)/(1-exp(-(v_e + 54)/4))
+bm_e = 0.28*(v_e + 27)/(exp((v_e + 27)/5) - 1)
+ah_e = 0.128*exp( - (v_e + 50)/18)
+bh_e = 4/(1 + exp( - (v_e + 27)/5))
+an_e = 0.032*(v_e + 52)/(1 - exp( - (v_e + 52)/5))
+bn_e = 0.5*exp( - (v_e + 57)/40)
+minf_Ca = 1/(1 + exp(-(v_e + 25)/2.5))
+
+# SODIUM FAST INACTIVATING CURRENT
+I_Na_FI_e = g_Na_FI_e*m_e^3*h_e*(v_e - E_Na_e)
+# SODIUM PERSISTENT CURRENT
+I_Na_P_e = g_Na_P_e*m_e^3*(v_e - E_Na_e)
+aux I_Na_P_e_ = I_Na_P_e
+# POTASSIUM DELAYED RECTIFIER CURRENT
+I_K_DR_e = g_K_DR_e*n_e^4*(v_e - E_K_e)
+aux I_K_DR_e_ = I_K_DR_e
+
+# CALCIUM DEPENDENT POTASSIUM CURRENT
+I_K_AHP_e = g_K_AHP_e*(Ca_e/(Ca_e + K_Ca))*(v_e - E_K_e)
+aux I_K_AHP_e_ = I_K_AHP_e
+
+# LEAK CURRENTS
+I_Na_L_e = g_Na_L_e*(v_e - E_Na_e)
+aux I_Na_L_e_ = I_Na_L_e
+I_K_L_e = g_K_L_e*(v_e - E_K_e)
+aux I_K_L_e_ = I_K_L_e
+I_Cl_L_e = g_Cl_L_e*(v_e - E_Cl_e)
+aux I_Cl_L_e_ = I_Cl_L_e
+I_L_e = I_Na_L_e + I_K_L_e + I_Cl_L_e
+aux I_L_e_ = I_L_e
+
+# KCC2 COTRANSPORTER 
+I_KCC = rho_KCC*log((K_e*Cl_e)/(K_o*Cl_o))
+aux I_KCC_ = I_KCC
+# NKCC1 COTRANSPORTER 
+I_NKCC = rho_NKCC/(1+exp(K_NKCC_K-K_o))*(log((K_e*Cl_e)/(K_o*Cl_o))+log((Na_e*Cl_e)/(Na_o*Cl_o)))
+aux I_NKCC_ = I_NKCC
+
+# PUMP CURRENT
+I_pump_e = rho_pump * (1+tanh(a/26.64*v_e + b))/(1+tanh(a/26.64*(-70) + b)) * (Na_e/(Na_e + K_pump_Na))^3*(K_o/(K_o + K_pump_K))^2
+aux I_pump_e_ = I_pump_e
+
+# SYNAPTIC EXCITATORY CURRENT
+I_Na_GLU_e = g_GLU_e/2*s_e*(v_e - E_Na_e)
+I_K_GLU_e = g_GLU_e/2*s_e*(v_e - E_K_e)
+I_GLU_e = I_Na_GLU_e + I_K_GLU_e
+aux I_GLU_e_ = I_GLU_e
+# SYNAPTIC INHIBITORY CURRENT
+I_GABA_e = g_GABA_e*s_i*(v_e - E_Cl_e)
+aux I_GABA_e_ = I_GABA_e
+
+# EXTERNAL INPUT
+I_Na_D_e = g_D_e/2*(v_e - E_Na_e)
+I_K_D_e = g_D_e/2*(v_e - E_K_e)
+I_D_e = I_Na_D_e + I_K_D_e
+aux I_D_e_ = I_D_e
+
+
+#### GABAERGIC NEURON
+
+# REVERSAL POTENTIALS
+E_K_i = 26.64*log(K_o/K_i)
+E_Na_i = 26.64*log(Na_o/Na_i)
+aux E_K_i_ = E_K_i
+aux E_Na_i_ = E_Na_i
+
+# (IN)ACTIVATION FUNCTIONS
+minf_i = 1/(1+exp(-(v_i-(-24))/11.5))
+minf_P_i = 1/(1+exp(-(v_i+shift_P-(-24))/11.5))
+h_inf_i = 1/(1+exp(-(v_i-(-58.3))/(-6.7)))
+tau_h_i = 0.5 + 14/(1 + exp(-(v_i-(-60))/(-12)))
+n_inf_i = 1/(1 + exp(-(v_i - (-12.4))/6.8))
+tau_n_i = (0.087 + 11.4/(1 + exp((v_i + 14.6)/8.6)))*(0.087 + 11.4 * 1/(1 + exp(-(v_i - 1.3)/18.7)))
+
+# SODIUM FAST INACTIVATING CURRENT
+I_Na_FI_i = g_Na_FI_i*minf_i^3*h_i*(v_i - E_Na_i)
+aux I_Na_FI_i_ = I_Na_FI_i
+# SODIUM PERSISTENT CURRENT
+I_Na_P_i = g_Na_P_i*minf_P_i^3*(v_i - E_Na_i)
+aux I_Na_P_i_ = I_Na_P_i
+# POTASSIUM DELAYED RECTIFIER CURRENT
+I_K_DR_i = g_K_DR_i*n_i^2*(v_i - E_K_i)
+aux I_K_DR_i_ = I_K_DR_i
+
+# LEAK CURRENTS
+I_Na_L_i = g_Na_L_i*(v_i - E_Na_i)
+aux I_Na_L_i_ = I_Na_L_i
+I_K_L_i = g_K_L_i *(v_i - E_K_i)
+aux I_K_L_i_ = I_K_L_i
+I_L_i = I_Na_L_i + I_K_L_i
+aux I_L_i_ = I_L_i
+
+# PUMP CURRENT
+I_pump_i = rho_pump * (1+tanh(a/26.64*v_i + b))/(1+tanh(a/26.64*(-70) + b)) * (Na_i/(Na_i + K_pump_Na))^3*(K_o/(K_o + K_pump_K))^2
+aux I_pump_i_ = I_pump_i
+
+# SYNAPTIC EXCITATORY CURRENT
+I_Na_GLU_i = g_GLU_i/2*s_e*(v_i - E_Na_i)
+I_K_GLU_i = g_GLU_i/2*s_e*(v_i - E_K_i)
+I_GLU_i = I_Na_GLU_i + I_K_GLU_i
+aux I_GLU_i_ = I_GLU_i
+
+# EXTERNAL INPUT
+I_Na_D_i = g_D_i/2*(v_i - E_Na_i)
+I_K_D_i = g_D_i/2*(v_i - E_K_i)
+I_D_i = I_Na_D_i + I_K_D_i
+aux I_D_i_ = I_D_i 
+
+
+#### EXTRACELLULAR POTASSIUM DIFFUSION
+I_diff = epsilon*(K_o-K_bath)
+aux I_diff_ = I_diff
+
+
+#-------------------------------------------------------------------------------
+# ODEs
+#-------------------------------------------------------------------------------
+
+#### PYRAMIDAL NEURON
+v_e' = - I_Na_FI_e - I_Na_P_e - I_K_DR_e - I_K_AHP_e - I_L_e - I_pump_e - I_GLU_e - I_GABA_e - I_D_e
+m_e' = am_e*(1 - m_e) - bm_e*m_e
+h_e' = ah_e*(1 - h_e) - bh_e*h_e
+n_e' = an_e*(1 - n_e) - bn_e*n_e
+
+Na_e' = - gamma_e*(I_Na_FI_e + I_Na_P_e + I_Na_L_e + 3*I_pump_e + I_Na_GLU_e + I_Na_D_e) - I_NKCC
+Cl_e' = gamma_e*(I_Cl_L_e + I_GABA_e) - I_KCC - 2*I_NKCC
+Ca_e' = - gamma_e/2*g_Ca_e*minf_Ca*(v_e - E_Ca_e) - Ca_e/tau_Ca
+
+s_e' = - (1/tau_e)*s_e
+
+
+#### GABAERGIC NEURON
+v_i' = - I_Na_FI_i - I_Na_P_i - I_K_DR_i - I_L_i - I_pump_i - I_GLU_i - I_D_i
+h_i' = (h_inf_i - h_i)/tau_h_i
+n_i' = (n_inf_i - n_i)/tau_n_i
+
+Na_i' = - gamma_i*( I_Na_FI_i + I_Na_P_i + I_Na_L_i + 3*I_pump_i + I_Na_GLU_i + I_Na_D_i )
+
+s_i' = - (1/tau_i)*s_i
+
+
+#### EXTRACELLULAR POTASSIUM
+K_o' = beta_1 * ( 1/(1+beta_2)*(gamma_e*(I_K_DR_e + I_K_AHP_e +  I_K_L_e - 2*I_pump_e + I_K_GLU_e + I_K_D_e) + I_KCC + I_NKCC) + beta_2/(1+beta_2)*gamma_i*(I_K_DR_i + I_K_L_i - 2*I_pump_i + I_K_GLU_i + I_K_D_i) ) - I_diff
+
+
+#-------------------------------------------------------------------------------
+# NUMERICS
+#-------------------------------------------------------------------------------
+
+@ method=rk4, dt=0.01, total=20000, nout=1
+@ xp=t, yp=v_e, xlo=0, xhi=20000, ylo=-100, yhi=100
+@ bound=9000000
+@ maxstor=9000000
+
+
+done
+
+
